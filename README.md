@@ -305,8 +305,6 @@ actions = model.sample_actions(obs, task, rng=jax.random.PRNGKey(0))
 | 模型 / 环境种子 | `model_seed=0`，`env_seed=0`（两者分别记录，见 `eval_config.json`）|
 | 评分 | 成功率 = 成功数 / 评测数 × 100%；B-SimplerScore = (T1 + T2) / 2 |
 
-> **说明**：作业最低要求为「Base + 1 个 Final = 40 episodes」。本项目额外加入 **Final-B（full）**，共 60 episodes，用于对比两种微调方式（作业不要求但允许）。若时间紧张，可只跑 Base + Final-A（40 episodes，仍满足最低要求）。
-
 ### 运行命令
 
 ```bash
