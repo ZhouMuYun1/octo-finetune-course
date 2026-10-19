@@ -138,7 +138,7 @@
 | 项 | 文件 | 说明 |
 |---|---|---|
 | checkpoint 上传链接 | checkpoint_link.txt §2 | 上传两个 tar.gz 后填链接 |
-| 40 episodes 结果 | results.csv | 2 模型 × 2 任务 × 10 |
+| 40 episodes 结果 | results.csv | **3 模型 × 2 任务 × 10 = 60**（作业最低 40，额外加 Final-B 作对照）|
 | 逐 episode 记录 | episodes.csv | 含 seed、成功标记、步数、异常 |
 | 2–4 个代表性视频 | video_links.md | 覆盖 T1/T2，含失败样例 |
 | 案例分析与局限 | 报告 | 至少 2 个 episode 结合视频分析 |

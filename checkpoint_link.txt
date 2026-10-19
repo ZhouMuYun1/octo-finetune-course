@@ -7,7 +7,7 @@
 | **Final-A（主方案）** | `head_only` | 1,000 | **750** | 27 / 366 叶子 | 298 MB |
 | **Final-B（对照）** | `full` | 1,000 | **750** | 366 / 366 叶子 | 297 MB |
 
-> **评测使用 Final-A（head_only）**。Final-B（full）作为对照保留，供分析参考。
+> **评测同时使用 Final-A（head_only）与 Final-B（full）**，与 Base 做三方对比（3 模型 × 2 任务 × 10 = **60 episodes**）。Final-B 用于回答「小数据 + domain gap 下冻结 Transformer 是否更稳」。
 >
 > 两个模型的训练都跑满 1,000 步，但为保持**步数一致、对比公平**，统一取 **step 750**（full 的 step 1000 保存时因内存压力中断）。详见 `docs/TRAINING_RECORD.md` 第 5 节。
 

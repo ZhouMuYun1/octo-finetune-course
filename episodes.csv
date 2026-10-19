@@ -1,15 +1,74 @@
+﻿# episodes.csv —— 逐 episode 评测记录（由 evaluate.py 自动追加，或手工填写）
+# 字段说明：
+#   模型       : Base / Final-A(head_only) / Final-B(full)
+#   任务       : widowx_spoon_on_towel / widowx_put_eggplant_in_basket
+#   episode编号: 0-9（对应 configs/eval_config.json 的 episode_index）
+#   环境seed   : 取自 eval_config.json（env_seed，本清单为 0）
+#   模型seed   : 取自 eval_config.json（model_seed，本清单为 0）
+#   成功标记   : 1=成功，0=失败（环境原生 done 判定，策略 terminate 不算成功）
+#   控制步数   : 该 episode 实际执行的 env.step 次数
+#   异常信息   : 无异常留空；崩溃/超时等如实记录（按失败计入）
+#
+# 预期总行数：3 模型 × 2 任务 × 10 episodes = 60 行（不含注释）
+# ============================================================
 模型,任务,episode编号,环境seed,模型seed,成功标记,控制步数,异常信息
-# 说明：
-#   - 模型：Base / Final
-#   - 任务：widowx_spoon_on_towel / widowx_put_eggplant_in_basket
-#   - episode编号：0-9（对应 configs/eval_config.json 中的 obj_episode_id）
-#   - 环境seed：取自 configs/eval_config.json（env_seed）
-#   - 模型seed：取自 configs/eval_config.json（model_seed）
-#   - 成功标记：1=成功，0=失败
-#   - 控制步数：该 episode 实际执行的环境 step 数
-#   - 异常信息：无异常留空；超时/崩溃等如实记录
-# ============ 由评测组员填写，以下为示例行（请替换为真实数据）============
-Base,widowx_spoon_on_towel,0,0,0,,,, 
-Final,widowx_spoon_on_towel,0,0,0,,,,
-Base,widowx_put_eggplant_in_basket,0,0,0,,,,
-Final,widowx_put_eggplant_in_basket,0,0,0,,,,
+Base,widowx_spoon_on_towel,0,0,0,,,
+Base,widowx_spoon_on_towel,1,0,0,,,
+Base,widowx_spoon_on_towel,2,0,0,,,
+Base,widowx_spoon_on_towel,3,0,0,,,
+Base,widowx_spoon_on_towel,4,0,0,,,
+Base,widowx_spoon_on_towel,5,0,0,,,
+Base,widowx_spoon_on_towel,6,0,0,,,
+Base,widowx_spoon_on_towel,7,0,0,,,
+Base,widowx_spoon_on_towel,8,0,0,,,
+Base,widowx_spoon_on_towel,9,0,0,,,
+Base,widowx_put_eggplant_in_basket,0,0,0,,,
+Base,widowx_put_eggplant_in_basket,1,0,0,,,
+Base,widowx_put_eggplant_in_basket,2,0,0,,,
+Base,widowx_put_eggplant_in_basket,3,0,0,,,
+Base,widowx_put_eggplant_in_basket,4,0,0,,,
+Base,widowx_put_eggplant_in_basket,5,0,0,,,
+Base,widowx_put_eggplant_in_basket,6,0,0,,,
+Base,widowx_put_eggplant_in_basket,7,0,0,,,
+Base,widowx_put_eggplant_in_basket,8,0,0,,,
+Base,widowx_put_eggplant_in_basket,9,0,0,,,
+Final-A,widowx_spoon_on_towel,0,0,0,,,
+Final-A,widowx_spoon_on_towel,1,0,0,,,
+Final-A,widowx_spoon_on_towel,2,0,0,,,
+Final-A,widowx_spoon_on_towel,3,0,0,,,
+Final-A,widowx_spoon_on_towel,4,0,0,,,
+Final-A,widowx_spoon_on_towel,5,0,0,,,
+Final-A,widowx_spoon_on_towel,6,0,0,,,
+Final-A,widowx_spoon_on_towel,7,0,0,,,
+Final-A,widowx_spoon_on_towel,8,0,0,,,
+Final-A,widowx_spoon_on_towel,9,0,0,,,
+Final-A,widowx_put_eggplant_in_basket,0,0,0,,,
+Final-A,widowx_put_eggplant_in_basket,1,0,0,,,
+Final-A,widowx_put_eggplant_in_basket,2,0,0,,,
+Final-A,widowx_put_eggplant_in_basket,3,0,0,,,
+Final-A,widowx_put_eggplant_in_basket,4,0,0,,,
+Final-A,widowx_put_eggplant_in_basket,5,0,0,,,
+Final-A,widowx_put_eggplant_in_basket,6,0,0,,,
+Final-A,widowx_put_eggplant_in_basket,7,0,0,,,
+Final-A,widowx_put_eggplant_in_basket,8,0,0,,,
+Final-A,widowx_put_eggplant_in_basket,9,0,0,,,
+Final-B,widowx_spoon_on_towel,0,0,0,,,
+Final-B,widowx_spoon_on_towel,1,0,0,,,
+Final-B,widowx_spoon_on_towel,2,0,0,,,
+Final-B,widowx_spoon_on_towel,3,0,0,,,
+Final-B,widowx_spoon_on_towel,4,0,0,,,
+Final-B,widowx_spoon_on_towel,5,0,0,,,
+Final-B,widowx_spoon_on_towel,6,0,0,,,
+Final-B,widowx_spoon_on_towel,7,0,0,,,
+Final-B,widowx_spoon_on_towel,8,0,0,,,
+Final-B,widowx_spoon_on_towel,9,0,0,,,
+Final-B,widowx_put_eggplant_in_basket,0,0,0,,,
+Final-B,widowx_put_eggplant_in_basket,1,0,0,,,
+Final-B,widowx_put_eggplant_in_basket,2,0,0,,,
+Final-B,widowx_put_eggplant_in_basket,3,0,0,,,
+Final-B,widowx_put_eggplant_in_basket,4,0,0,,,
+Final-B,widowx_put_eggplant_in_basket,5,0,0,,,
+Final-B,widowx_put_eggplant_in_basket,6,0,0,,,
+Final-B,widowx_put_eggplant_in_basket,7,0,0,,,
+Final-B,widowx_put_eggplant_in_basket,8,0,0,,,
+Final-B,widowx_put_eggplant_in_basket,9,0,0,,,

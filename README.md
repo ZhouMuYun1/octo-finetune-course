@@ -1,7 +1,7 @@
 # VLA 轻量微调：Octo-Small-1.5 × BridgeData V2（B 类 · 微调部分）
 
 > 本仓库为机器学习课程大作业 **B 类（工程实践型）** 的**数据处理与轻量微调**部分。
-> 评测（SimplerEnv 闭环、40 episodes）由同组组员在原生 Linux 上完成，相关代码、配置与协议一并在本仓库提供。
+> 评测（SimplerEnv 闭环、60 episodes）由同组组员在原生 Linux 上完成，相关代码、配置与协议一并在本仓库提供。
 
 ## 项目概述
 
@@ -294,7 +294,8 @@ actions = model.sample_actions(obs, task, rng=jax.random.PRNGKey(0))
 |---|---|
 | SimplerEnv 版本 | 官方仓库 commit **`c701ea271b16b80616d6fed9713c4a50a0adea3b`**（见 `scripts/setup_native_linux.sh` 的 `SIMPLERENV_COMMIT`）|
 | 任务 | T1 `widowx_spoon_on_towel`、T2 `widowx_put_eggplant_in_basket` |
-| episode 数 | 每模型每任务 **10** 次（共 2 模型 × 2 任务 × 10 = **40**）|
+| **评测模型** | **3 个**：Base、Final-A（head_only）、Final-B（full）|
+| episode 数 | 每模型每任务 **10** 次（共 **3 模型 × 2 任务 × 10 = 60**）|
 | 初始状态清单 | [`configs/eval_config.json`](configs/eval_config.json)（**已冻结，未用于训练或调参**）|
 | 控制频率 | 5 Hz（SimplerEnv WidowX 官方配置）|
 | 最大步数 | T1 = **60 步**；T2 = **120 步** |
@@ -304,19 +305,31 @@ actions = model.sample_actions(obs, task, rng=jax.random.PRNGKey(0))
 | 模型 / 环境种子 | `model_seed=0`，`env_seed=0`（两者分别记录，见 `eval_config.json`）|
 | 评分 | 成功率 = 成功数 / 评测数 × 100%；B-SimplerScore = (T1 + T2) / 2 |
 
+> **说明**：作业最低要求为「Base + 1 个 Final = 40 episodes」。本项目额外加入 **Final-B（full）**，共 60 episodes，用于对比两种微调方式（作业不要求但允许）。若时间紧张，可只跑 Base + Final-A（40 episodes，仍满足最低要求）。
+
 ### 运行命令
 
 ```bash
-# Base
-python evaluate.py --model-type octo-small --checkpoint <octo-small-1.5 路径> \
+# Base（预训练，未经本次微调）
+python evaluate.py --model-type octo-small \
+  --checkpoint "$HOME/vla_workspace/models/octo-small-1.5" \
   --task widowx_spoon_on_towel --episodes 10 \
   --eval-config configs/eval_config.json --output-dir results/base_t1
 
-# Final
-python evaluate.py --model-type octo-small --checkpoint <Final 路径> \
+# Final-A（动作头微调，主方案）
+python evaluate.py --model-type octo-small \
+  --checkpoint "<octo_head_only_step750 解压路径>" \
   --task widowx_spoon_on_towel --episodes 10 \
-  --eval-config configs/eval_config.json --output-dir results/final_t1
+  --eval-config configs/eval_config.json --output-dir results/final_a_t1
+
+# Final-B（全量微调，对照）
+python evaluate.py --model-type octo-small \
+  --checkpoint "<octo_full_step750 解压路径>" \
+  --task widowx_spoon_on_towel --episodes 10 \
+  --eval-config configs/eval_config.json --output-dir results/final_b_t1
 ```
+
+对 `widowx_put_eggplant_in_basket` 重复同样命令（共 6 次调用）。
 
 ### 评测隔离声明
 
@@ -324,6 +337,7 @@ python evaluate.py --model-type octo-small --checkpoint <Final 路径> \
 - 训练、调参、checkpoint 选择**均未使用**该清单的任何状态
 - 评测初始状态与训练数据（BridgeData V2）完全独立
 - 不筛选失败 episode，不人工干预
+- **3 个模型使用完全相同的初始状态清单与种子**
 
 ---
 
@@ -331,16 +345,27 @@ python evaluate.py --model-type octo-small --checkpoint <Final 路径> \
 
 ### 6.1 汇总表
 
-| 模型 | 训练模块 | T1 成功数 | T2 成功数 | B-SimplerScore |
-|---|---|---:|---:|---:|
-| Base | 未进行本次微调 | /10 | /10 | |
-| Final | 动作头（head_only）| /10 | /10 | |
+| 模型 | 训练模块 | 可训练参数 | T1 成功数 | T2 成功数 | B-SimplerScore |
+|---|---|---|---:|---:|---:|
+| **Base** | 未进行本次微调 | 0 | /10 | /10 | |
+| **Final-A** | 动作头（head_only）| 27 / 366 叶子 | /10 | /10 | |
+| **Final-B** | 全量（full）| 366 / 366 叶子 | /10 | /10 | |
 
-**变化**：T1 = __ 个百分点；T2 = __ 个百分点；平均 = __ 个百分点
+**变化（单位：百分点）**：
+
+| 对比 | T1 | T2 | B-SimplerScore |
+|---|---:|---:|---:|
+| Final-A − Base | | | |
+| Final-B − Base | | | |
+| Final-A − Final-B | | | |
+
+> 第三行「Final-A − Final-B」是本项目额外对照的核心指标：**在 717 条小数据 + domain gap 条件下，冻结 Transformer 是否比全量微调更稳？**
 
 ### 6.2 逐 episode 记录
 
 见 [`episodes.csv`](episodes.csv)（字段：模型、任务、episode 编号、环境 seed、模型 seed、成功标记、控制步数、异常信息）。
+
+**预期行数**：3 模型 × 2 任务 × 10 episodes = **60 行**。
 
 ### 6.3 代表性视频
 
@@ -373,7 +398,7 @@ MODE=head_only NUM_STEPS=1000 BATCH_SIZE=8 bash train.sh
 | 组员 | 负责内容 |
 |---|---|
 | （待填）| 数据处理、Octo 环境搭建、两种微调训练、checkpoint 验证、仓库整理 |
-| （待填）| SimplerEnv 环境搭建、40 episodes 评测、视频录制、结果分析 |
+| （待填）| SimplerEnv 环境搭建、60 episodes 评测（3 模型）、视频录制、结果分析 |
 
 ---
 
