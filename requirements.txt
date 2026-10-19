@@ -1,0 +1,83 @@
+# =============================================================================
+# Octo-Small-1.5 微调环境依赖
+# 适用：训练（WSL2 或原生 Linux）+ Octo 数据加载
+# 安装顺序很重要：先装 JAX，再钉版本，最后装 TensorFlow
+# =============================================================================
+
+# ---- Python 基础 ----
+# Python 3.10（conda create -n test_jax python=3.10）
+
+# ---- JAX（GPU）----
+# 注意：必须用 "jax[cuda12]"，不能用 "jaxlib[cuda12]"
+jax[cuda12]==0.6.2
+
+# ---- 关键钉版本（与 JAX 0.6.2 / TF 2.15 兼容）----
+numpy==1.26.4
+ml_dtypes==0.5.4
+protobuf==3.20.3
+
+# ---- TensorFlow（仅用于数据加载，不参与训练计算）----
+tensorflow==2.15.0
+tensorflow-probability==0.23.0
+
+# ---- Octo 训练依赖 ----
+flax==0.10.7
+optax
+einops
+ml-collections
+transformers==4.55.4
+tokenizers==0.21.4
+orbax-checkpoint==0.4.8
+tensorstore
+
+# ---- 可视化 / 回调 ----
+matplotlib
+plotly
+gym==0.26.2
+
+# ---- 工具 ----
+tqdm
+absl-py
+cloudpickle
+dill
+gymnasium==0.29.1
+
+# =============================================================================
+# 安装步骤（推荐）
+# =============================================================================
+#
+#   conda create -y -n test_jax python=3.10
+#   conda activate test_jax
+#
+#   pip install -U "jax[cuda12]"
+#   pip install --no-deps numpy==1.26.4 ml_dtypes==0.5.4 protobuf==3.20.3
+#   pip install tensorflow==2.15.0 tensorflow-probability==0.23.0
+#   pip install flax==0.10.7 optax einops ml-collections \
+#               transformers==4.55.4 tokenizers==0.21.4 \
+#               orbax-checkpoint==0.4.8 tensorstore \
+#               matplotlib plotly gym==0.26.2 tqdm
+#
+#   # Octo 本体（固定 commit）
+#   git clone https://github.com/octo-models/octo.git
+#   cd octo && git checkout 241fb3514b7c40957a86d869fecb7c7fc353f540
+#   pip install -e . --no-deps
+#
+#   # dlimp（数据加载）
+#   git clone https://github.com/kvablack/dlimp.git
+#
+#   # 应用兼容补丁
+#   bash scripts/patch_octo_jax06.sh
+#
+# =============================================================================
+# 说明
+# =============================================================================
+# 1. protobuf 必须钉在 3.20.3：
+#    - TensorFlow 2.15 要求 protobuf < 4.21
+#    - 真实 wandb 0.31 要求 protobuf 7.x，故本项目用 stub 替代 wandb
+# 2. numpy 必须钉在 1.26.4：
+#    - JAX 0.6.2 的 jaxlib 要求 numpy >= 1.26
+#    - 但 numpy 2.x 与 Octo/dlimp 的旧代码不兼容
+# 3. ml_dtypes 必须钉在 0.5.4：
+#    - 新版 ml_dtypes 缺少 float8_e3m4，会导致导入失败
+# 4. transformers 必须 <= 4.55.x：
+#    - 4.56+ 移除了 FlaxAutoModel，而 Octo 依赖它

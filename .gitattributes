@@ -1,0 +1,21 @@
+# 统一换行符：文本文件用 LF，避免 Windows/Linux 混用导致 diff 噪音
+* text=auto eol=lf
+
+# 二进制文件
+*.tar.gz binary
+*.zip binary
+*.png binary
+*.jpg binary
+*.mp4 binary
+*.ckpt binary
+
+# Shell 脚本必须用 LF
+*.sh text eol=lf
+
+# Python 用 LF
+*.py text eol=lf
+
+# Markdown / CSV / TXT 用 LF
+*.md text eol=lf
+*.csv text eol=lf
+*.txt text eol=lf

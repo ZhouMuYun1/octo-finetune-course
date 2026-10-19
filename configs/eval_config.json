@@ -1,0 +1,366 @@
+{
+  "meta": {
+    "purpose": "正式评测初始状态清单（B 类：T1/T2）",
+    "generated_at": "2026-10-16T12:59:45.948505+00:00",
+    "selection_rule": "确定性选取：对每个任务取官方对象变化范围 obj_episode_range 的前 10 个 episode_id（0..N-1）；机器人初始位姿采用 SimplerEnv 官方 octo_bridge.sh 中的固定值。不进行任何基于评测结果的筛选。",
+    "eval_isolation_note": "本清单仅供正式评测使用。禁止用于选择 checkpoint、调参或筛选研究设置。开发与训练数据采集必须使用独立的初始状态。",
+    "control_freq_hz": 5,
+    "simpler_env_version": "github.com/simpler-env/SimplerEnv (main) + ManiSkill2_real2sim submodule",
+    "env_seed_spec": "初始状态由 (robot_init_x, robot_init_y, robot_init_quat, obj_episode_id) 完全确定；环境随机种子用于对象/纹理采样的复现",
+    "env_seed": 0,
+    "model_seed": 0,
+    "episodes_per_task": 10
+  },
+  "tasks": {
+    "widowx_spoon_on_towel": {
+      "key": "widowx_spoon_on_towel",
+      "env_name": "PutSpoonOnTableClothInScene-v0",
+      "scene_name": "bridge_table_1_v1",
+      "robot": "widowx",
+      "rgb_overlay": "data/real_inpainting/bridge_real_eval_1.png",
+      "robot_init_x": 0.147,
+      "robot_init_y": 0.028,
+      "robot_init_quat": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "max_episode_steps": 60,
+      "control_freq": 5,
+      "sim_freq": 500,
+      "obj_episode_range": [
+        0,
+        24
+      ],
+      "instruction": "",
+      "episodes": [
+        {
+          "episode_index": 0,
+          "episode_id": 0,
+          "env_seed": 0,
+          "model_seed": 0,
+          "robot_init_x": 0.147,
+          "robot_init_y": 0.028,
+          "robot_init_quat": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "obj_episode_id": 0
+        },
+        {
+          "episode_index": 1,
+          "episode_id": 1,
+          "env_seed": 0,
+          "model_seed": 0,
+          "robot_init_x": 0.147,
+          "robot_init_y": 0.028,
+          "robot_init_quat": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "obj_episode_id": 1
+        },
+        {
+          "episode_index": 2,
+          "episode_id": 2,
+          "env_seed": 0,
+          "model_seed": 0,
+          "robot_init_x": 0.147,
+          "robot_init_y": 0.028,
+          "robot_init_quat": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "obj_episode_id": 2
+        },
+        {
+          "episode_index": 3,
+          "episode_id": 3,
+          "env_seed": 0,
+          "model_seed": 0,
+          "robot_init_x": 0.147,
+          "robot_init_y": 0.028,
+          "robot_init_quat": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "obj_episode_id": 3
+        },
+        {
+          "episode_index": 4,
+          "episode_id": 4,
+          "env_seed": 0,
+          "model_seed": 0,
+          "robot_init_x": 0.147,
+          "robot_init_y": 0.028,
+          "robot_init_quat": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "obj_episode_id": 4
+        },
+        {
+          "episode_index": 5,
+          "episode_id": 5,
+          "env_seed": 0,
+          "model_seed": 0,
+          "robot_init_x": 0.147,
+          "robot_init_y": 0.028,
+          "robot_init_quat": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "obj_episode_id": 5
+        },
+        {
+          "episode_index": 6,
+          "episode_id": 6,
+          "env_seed": 0,
+          "model_seed": 0,
+          "robot_init_x": 0.147,
+          "robot_init_y": 0.028,
+          "robot_init_quat": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "obj_episode_id": 6
+        },
+        {
+          "episode_index": 7,
+          "episode_id": 7,
+          "env_seed": 0,
+          "model_seed": 0,
+          "robot_init_x": 0.147,
+          "robot_init_y": 0.028,
+          "robot_init_quat": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "obj_episode_id": 7
+        },
+        {
+          "episode_index": 8,
+          "episode_id": 8,
+          "env_seed": 0,
+          "model_seed": 0,
+          "robot_init_x": 0.147,
+          "robot_init_y": 0.028,
+          "robot_init_quat": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "obj_episode_id": 8
+        },
+        {
+          "episode_index": 9,
+          "episode_id": 9,
+          "env_seed": 0,
+          "model_seed": 0,
+          "robot_init_x": 0.147,
+          "robot_init_y": 0.028,
+          "robot_init_quat": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "obj_episode_id": 9
+        }
+      ]
+    },
+    "widowx_put_eggplant_in_basket": {
+      "key": "widowx_put_eggplant_in_basket",
+      "env_name": "PutEggplantInBasketScene-v0",
+      "scene_name": "bridge_table_1_v2",
+      "robot": "widowx_sink_camera_setup",
+      "rgb_overlay": "data/real_inpainting/bridge_sink.png",
+      "robot_init_x": 0.127,
+      "robot_init_y": 0.06,
+      "robot_init_quat": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "max_episode_steps": 120,
+      "control_freq": 5,
+      "sim_freq": 500,
+      "obj_episode_range": [
+        0,
+        24
+      ],
+      "instruction": "",
+      "episodes": [
+        {
+          "episode_index": 0,
+          "episode_id": 0,
+          "env_seed": 0,
+          "model_seed": 0,
+          "robot_init_x": 0.127,
+          "robot_init_y": 0.06,
+          "robot_init_quat": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "obj_episode_id": 0
+        },
+        {
+          "episode_index": 1,
+          "episode_id": 1,
+          "env_seed": 0,
+          "model_seed": 0,
+          "robot_init_x": 0.127,
+          "robot_init_y": 0.06,
+          "robot_init_quat": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "obj_episode_id": 1
+        },
+        {
+          "episode_index": 2,
+          "episode_id": 2,
+          "env_seed": 0,
+          "model_seed": 0,
+          "robot_init_x": 0.127,
+          "robot_init_y": 0.06,
+          "robot_init_quat": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "obj_episode_id": 2
+        },
+        {
+          "episode_index": 3,
+          "episode_id": 3,
+          "env_seed": 0,
+          "model_seed": 0,
+          "robot_init_x": 0.127,
+          "robot_init_y": 0.06,
+          "robot_init_quat": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "obj_episode_id": 3
+        },
+        {
+          "episode_index": 4,
+          "episode_id": 4,
+          "env_seed": 0,
+          "model_seed": 0,
+          "robot_init_x": 0.127,
+          "robot_init_y": 0.06,
+          "robot_init_quat": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "obj_episode_id": 4
+        },
+        {
+          "episode_index": 5,
+          "episode_id": 5,
+          "env_seed": 0,
+          "model_seed": 0,
+          "robot_init_x": 0.127,
+          "robot_init_y": 0.06,
+          "robot_init_quat": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "obj_episode_id": 5
+        },
+        {
+          "episode_index": 6,
+          "episode_id": 6,
+          "env_seed": 0,
+          "model_seed": 0,
+          "robot_init_x": 0.127,
+          "robot_init_y": 0.06,
+          "robot_init_quat": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "obj_episode_id": 6
+        },
+        {
+          "episode_index": 7,
+          "episode_id": 7,
+          "env_seed": 0,
+          "model_seed": 0,
+          "robot_init_x": 0.127,
+          "robot_init_y": 0.06,
+          "robot_init_quat": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "obj_episode_id": 7
+        },
+        {
+          "episode_index": 8,
+          "episode_id": 8,
+          "env_seed": 0,
+          "model_seed": 0,
+          "robot_init_x": 0.127,
+          "robot_init_y": 0.06,
+          "robot_init_quat": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "obj_episode_id": 8
+        },
+        {
+          "episode_index": 9,
+          "episode_id": 9,
+          "env_seed": 0,
+          "model_seed": 0,
+          "robot_init_x": 0.127,
+          "robot_init_y": 0.06,
+          "robot_init_quat": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "obj_episode_id": 9
+        }
+      ]
+    }
+  }
+}

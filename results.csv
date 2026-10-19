@@ -1,0 +1,3 @@
+模型,训练模块,T1_任务,T1_成功数,T1_评测数,T1_成功率,T2_任务,T2_成功数,T2_评测数,T2_成功率,B-SimplerScore,备注
+Base,未进行本次微调,widowx_spoon_on_towel,,10,,widowx_put_eggplant_in_basket,,10,,,待评测组员填写
+Final,动作头(head_only),widowx_spoon_on_towel,,10,,widowx_put_eggplant_in_basket,,10,,,待评测组员填写

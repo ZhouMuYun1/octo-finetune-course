@@ -1,0 +1,49 @@
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# ---- 训练产出（体积大，通过 checkpoint_link.txt 分发）----
+checkpoints/
+*.orbax-checkpoint-tmp-*
+wandb/
+wandb_stub/
+
+# ---- checkpoint 压缩包（作业要求：不在代码仓库存放大体积权重）----
+*.tar.gz
+*.zip
+octo_*_step*/
+
+# ---- 数据（体积大，通过 DATA_PREPARATION.md 复现）----
+bridge_data/
+data/
+*.tfrecord
+*.tfrecord-*
+
+# ---- 模型权重 ----
+*.ckpt
+*.safetensors
+models/
+
+# ---- 日志（保留主日志，排除临时的）----
+*.log
+!train_log_*.txt
+
+# ---- 视频（大文件，通过 video_links.md 提供链接）----
+videos/*.mp4
+videos/*.gif
+!videos/.gitkeep
+
+# ---- 临时文件 ----
+*.tmp
+*.bak
+.DS_Store
+Thumbs.db
+*.swp
+
+# ---- 本地环境 ----
+.env
+.venv/
+venv/
+node_modules/
