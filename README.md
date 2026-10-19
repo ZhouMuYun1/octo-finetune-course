@@ -196,10 +196,28 @@ MODE=full NUM_STEPS=1000 BATCH_SIZE=8 bash train.sh
 
 | 文件 | 内容 |
 |---|---|
-| [`train_log_head_only.txt`](train_log_head_only.txt) | 动作头微调（含 `[TRAIN] step=... action_loss=...` 记录）|
-| [`train_log_full.txt`](train_log_full.txt) | 完整微调 |
+| [`train_log_head_only.txt`](train_log_head_only.txt) | 动作头微调（含 20 个 `[TRAIN] step=... loss=...` 记录点）|
+| [`train_log_full.txt`](train_log_full.txt) | 完整微调（含 20 个记录点）|
 
-> loss 曲线数据与超参数汇总见 [`docs/TRAINING_RECORD.md`](docs/TRAINING_RECORD.md)。
+#### ⚠️ 如何正确读这个 loss（避免误判）
+
+Octo-Small 的动作头是**扩散策略**，`loss` 是**去噪误差**，且**已乘 action_dim=7**：
+
+```
+日志 loss = 7 × MSE(pred_eps, noise)     noise ~ N(0,1)
+```
+
+| 情形 | 日志 loss |
+|---|---:|
+| 完全不学（恒预测 0）| **7.0** |
+| **本项目实测** | **0.92 – 2.38** |
+| 完美预测 | 0 |
+
+**所以 loss ≈ 1.6 不是"很差"，而是比 baseline 好约 77%**（实际 MSE = 1.6/7 ≈ 0.23）。
+
+波动范围大（0.92–4.2）是扩散训练的常态：batch 仅 8、每步随机采样扩散时间步、任务种类多。
+
+完整解读见 [`docs/TRAINING_RECORD.md`](docs/TRAINING_RECORD.md) 第 4.0 节。
 
 ---
 

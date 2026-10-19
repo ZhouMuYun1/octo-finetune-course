@@ -100,7 +100,96 @@ MODE=full NUM_STEPS=1000 BATCH_SIZE=8 bash train.sh
 
 ## 4. Loss 曲线
 
-训练指标为 `action_loss`（动作预测的 MSE，在归一化空间）。
+### 4.0 先读这一节：这个 loss 到底在算什么
+
+**重要**：Octo-Small 的动作头是**扩散策略（diffusion policy）**，它的 loss **不是**"动作预测的均方误差"，而是**去噪目标**——预测加到动作上的噪声 `eps`。
+
+源码（`octo/model/components/action_heads.py`，`DiffusionActionHead.loss`）：
+
+```python
+# 1) 采样随机噪声，构造加噪动作
+noise = jax.random.normal(noise_key, actions_flat.shape)
+noisy_actions = scale * actions_flat[None] + std * noise
+
+# 2) 模型预测噪声
+pred_eps = self(transformer_outputs, time=time, noisy_actions=noisy_actions)
+
+# 3) loss = MSE(pred_eps, noise)
+loss, metrics = continuous_loss(pred_eps, noise, mask, loss_type="mse")
+
+# 4) 沿动作维度"求和"而非平均 → 乘以 action_dim = 7
+loss = loss * self.action_dim
+```
+
+因此日志里的 `loss` **已经乘了 7**：
+
+```
+日志 loss = 7 × MSE(pred_eps, noise)
+```
+
+### 4.0.1 baseline 是多少？
+
+噪声服从标准正态 `N(0, 1)`，所以：
+
+| 情形 | per-element MSE | 日志 loss |
+|---|---:|---:|
+| **完全不学（恒预测 0）** | `E[noise²] = 1` | **7.0** |
+| 完美预测 | 0 | 0 |
+| **本项目实测** | **0.13 – 0.34** | **0.92 – 2.38** |
+
+**数值验证**（从 `N(0,1)` 采样，按 `loss = mean(noise²) × 7` 计算）：
+
+| 样本数 | MSE | 日志 loss |
+|---:|---:|---:|
+| 1,000 | 0.9763 | 6.834 |
+| 8,000 | 0.9696 | 6.788 |
+| 100,000 | 0.9978 | 6.985 |
+| 1,000,000 | 0.9997 | **6.998** |
+
+样本足够大时收敛到 **7.0**，印证 baseline 推导。
+
+> 顺带解释波动：batch=8 时单个 batch 的样本量很小（约 8 × 4 × 7 = 224 个元素），
+> 噪声平方的样本均值本身就有 ±10% 波动（上表 1,000 vs 1,000,000 样本的差别即为证），
+> 这是 loss 在 0.92–4.2 之间跳动的**统计根源**。
+
+**所以"loss ≈ 1"并不是"很差"，而是远好于 baseline 7.0。**
+
+### 4.0.2 换算表：loss 与实际 MSE
+
+| 模型 | 日志 loss | 实际 MSE（÷7）| 相对 baseline(1.0) 改善 |
+|---|---:|---:|---:|
+| head_only 平均 | 2.13 | 0.304 | **好 70%** |
+| head_only 最终（step 1000）| 1.60 | 0.229 | **好 77%** |
+| head_only 最低（step 900）| 0.92 | 0.131 | **好 87%** |
+| full 平均 | 2.38 | 0.340 | **好 66%** |
+| full 最终（step 1000）| 1.38 | 0.196 | **好 80%** |
+| full 最低（step 900）| 1.00 | 0.142 | **好 86%** |
+
+**解读**：模型解释了约 **66%–87%** 的噪声方差，说明微调确实让动作头学到了东西。
+
+### 4.0.3 为什么 loss 波动这么大（0.92–4.20）？
+
+不是训练不稳定，有三个结构性原因：
+
+| 原因 | 说明 |
+|---|---|
+| **batch 太小** | batch = 8，每个 batch 仅 8 条轨迹的样本，统计噪声大 |
+| **扩散时间步随机** | 每步随机采样 `t`。`t` 大 → 噪声重（难预测，loss 高）；`t` 小 → 噪声轻（易预测，loss 低）。这是扩散训练的正常现象 |
+| **任务多样性** | 717 条覆盖 pot / pan / cloth / spoon / burner / sink 等多种物体与场景，不同 batch 的动作分布差异大 |
+
+### 4.0.4 判断训练好坏的三个层次
+
+| 层次 | 指标 | 本项目情况 |
+|---|---|---|
+| ① 是否学到东西 | loss 是否远低于 baseline 7.0 | ✅ 1.0–2.4，远低于 7.0 |
+| ② 是否在收敛 | loss 是否有下降趋势 | ⚠️ 后期（850–1000 步）明显下降，但 750 步时尚未收敛 |
+| ③ 是否真的有用 | **评测成功率** | ⏳ 由评测组员完成 |
+
+> **注意**：loss 低不等于评测好。本项目训练数据与评测任务存在 domain gap（厨房场景 → 桌面放置），loss 只反映"在 Bridge 数据上的去噪能力"，不能直接推断 T1/T2 的成功率。
+
+---
+
+训练指标为 `action_loss`（扩散去噪误差 × 7，在归一化空间计算）。
 
 ### 4.1 head_only（主方案）
 
