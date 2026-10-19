@@ -91,7 +91,7 @@ log "3/7 pin numpy<2 and setuptools<81"
 "$PY" -c "import pkg_resources, numpy; print('pkg_resources OK; numpy', numpy.__version__)"
 
 # ---------------------------------------------------------------------------
-# 4. 克隆 SimplerEnv（含子模块）
+# 4. 克隆 SimplerEnv（含子模块，并固定到指定 commit）
 # ---------------------------------------------------------------------------
 log "4/7 clone SimplerEnv with submodules"
 mkdir -p "$PROJECT_ROOT"
@@ -101,6 +101,18 @@ else
   echo "already cloned: $SIMPLER_DIR"
   git -C "$SIMPLER_DIR" submodule update --init --recursive || true
 fi
+
+# 固定 commit：保证评测协议与初始状态可复现
+# 作业 6.2 要求"自行选择并记录 SimplerEnv 版本或提交号"
+SIMPLERENV_COMMIT="${SIMPLERENV_COMMIT:-c701ea271b16b80616d6fed9713c4a50a0adea3b}"
+if git -C "$SIMPLER_DIR" cat-file -e "$SIMPLERENV_COMMIT^{commit}" 2>/dev/null; then
+  git -C "$SIMPLER_DIR" checkout -q "$SIMPLERENV_COMMIT"
+  git -C "$SIMPLER_DIR" submodule update --init --recursive
+  echo "SimplerEnv pinned to $SIMPLERENV_COMMIT"
+else
+  echo "!!! WARNING: commit $SIMPLERENV_COMMIT 不存在，保留当前 HEAD: $(git -C "$SIMPLER_DIR" rev-parse HEAD)"
+fi
+
 # 校验视觉匹配贴图是否到位（缺了会导致评测画面与实际不符）
 if ! ls "$SIMPLER_DIR"/ManiSkill2_real2sim/data/real_inpainting/bridge_sink.png >/dev/null 2>&1; then
   echo "!!! ERROR: real_inpainting assets missing. Re-clone with --recurse-submodules."

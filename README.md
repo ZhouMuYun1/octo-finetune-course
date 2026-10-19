@@ -44,6 +44,7 @@ vla_finetune_repo/
 ├── video_links.md                ← 代表性视频链接（待评测组员填写）
 ├── videos/                       ← 视频存放目录（当前为空）
 └── docs/
+    ├── REQUIREMENTS_CHECKLIST.md ← 作业要求逐条对照表（自查用，建议先看）
     ├── MODEL_SELECTION.md        ← 模型选择与 WidowX 训练依据
     ├── DATA_PREPARATION.md       ← 数据处理细节
     ├── TRAINING_RECORD.md        ← 训练记录、可训练参数、loss 曲线
@@ -119,6 +120,9 @@ policy_setup=widowx_bridge
 | 使用分片 | **30 个 TFRecord 分片**（官方共 1,024 train / 128 val）|
 | 原始轨迹数 | **1,404 条**（train）/ **156 条**（val）|
 | **筛选后轨迹数** | **717 条**（放置类任务）|
+| **训练样本数** | **23,634 个**（717 条轨迹的总帧数；window=1 时每帧一个样本）|
+| 每条轨迹帧数 | 均值 33.0，中位数 32，最小 11，最大 77 |
+| 每 epoch 步数 | 23,634 / batch 8 = **2,954 步** |
 | 训练/验证划分 | 按**完整轨迹**划分：27 个分片训练 + 3 个分片验证（无泄漏）|
 
 ### 字段映射
@@ -220,7 +224,7 @@ MODE=full NUM_STEPS=1000 BATCH_SIZE=8 bash train.sh
 为保证**两个模型步数完全一致**（公平对比只应体现"微调方式"的差异），统一采用 **step 750**。
 
 选择 750 步的理由：
-1. 717 条轨迹 × 约 33 样本/条 ≈ 23,661 个样本；batch 8 → 约 2,958 步/epoch，750 步 ≈ 0.25 epoch
+1. 717 条轨迹共 **23,634 个训练样本**（总帧数）；batch 8 → **2,954 步/epoch**，750 步 ≈ 0.25 epoch
 2. 两个模型在该步数都有完整、可加载的权重
 3. 训练环境（WSL2，12 GB 内存）在接近 1,000 步时出现内存压力，full 模式的最终保存未能完成
 
@@ -270,14 +274,17 @@ actions = model.sample_actions(obs, task, rng=jax.random.PRNGKey(0))
 
 | 项目 | 内容 |
 |---|---|
-| SimplerEnv 版本 | 见 `scripts/setup_simplerenv.sh`（固定 commit）|
+| SimplerEnv 版本 | 官方仓库 commit **`c701ea271b16b80616d6fed9713c4a50a0adea3b`**（见 `scripts/setup_native_linux.sh` 的 `SIMPLERENV_COMMIT`）|
 | 任务 | T1 `widowx_spoon_on_towel`、T2 `widowx_put_eggplant_in_basket` |
 | episode 数 | 每模型每任务 **10** 次（共 2 模型 × 2 任务 × 10 = **40**）|
 | 初始状态清单 | [`configs/eval_config.json`](configs/eval_config.json)（**已冻结，未用于训练或调参**）|
-| 控制频率 | 5 Hz |
-| 最大步数 | T1 = 60 步；T2 = 120 步 |
-| 成功判定 | 环境原生 `done`（`env.step()` 的终止标记不计为成功）|
-| 模型 / 环境种子 | model_seed=0，env_seed=0 |
+| 控制频率 | 5 Hz（SimplerEnv WidowX 官方配置）|
+| 最大步数 | T1 = **60 步**；T2 = **120 步** |
+| 成功判定 | 环境原生 `done`（`env.step()` 返回的 `done=True` 才算成功）|
+| 成功记录时机 | 每个 episode 结束时记录一次，取最终 `done` 值 |
+| **终止逻辑** | ① 环境原生 `done=True` → 记成功；② 达到最大步数 `truncated=True` → 记失败；③ 策略输出 `terminate_episode>0` 仅记为 `terminated_by_policy`，**不当作成功**；④ 异常捕获 → 记失败并写入异常信息 |
+| 模型 / 环境种子 | `model_seed=0`，`env_seed=0`（两者分别记录，见 `eval_config.json`）|
+| 评分 | 成功率 = 成功数 / 评测数 × 100%；B-SimplerScore = (T1 + T2) / 2 |
 
 ### 运行命令
 

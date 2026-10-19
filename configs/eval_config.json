@@ -5,7 +5,7 @@
     "selection_rule": "确定性选取：对每个任务取官方对象变化范围 obj_episode_range 的前 10 个 episode_id（0..N-1）；机器人初始位姿采用 SimplerEnv 官方 octo_bridge.sh 中的固定值。不进行任何基于评测结果的筛选。",
     "eval_isolation_note": "本清单仅供正式评测使用。禁止用于选择 checkpoint、调参或筛选研究设置。开发与训练数据采集必须使用独立的初始状态。",
     "control_freq_hz": 5,
-    "simpler_env_version": "github.com/simpler-env/SimplerEnv (main) + ManiSkill2_real2sim submodule",
+    "simpler_env_version": "github.com/simpler-env/SimplerEnv @ c701ea271b16b80616d6fed9713c4a50a0adea3b (ManiSkill2_real2sim submodule pinned)",
     "env_seed_spec": "初始状态由 (robot_init_x, robot_init_y, robot_init_quat, obj_episode_id) 完全确定；环境随机种子用于对象/纹理采样的复现",
     "env_seed": 0,
     "model_seed": 0,
