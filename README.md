@@ -28,6 +28,8 @@ vla_finetune_repo/
 │   ├── eval_config.json          ← 正式评测初始状态清单（已冻结）
 │   └── checkpoint_metadata_*/    ← 两个 Final checkpoint 的配置与归一化统计量
 ├── scripts/
+│   ├── patch_simplerenv_octo.py  ← **评测前必须运行**（修复 2 处接口 bug）
+│   ├── summarize_results.py      ← 汇总 episodes.csv → results.csv
 │   ├── task_config.py            ← T1/T2 任务参数
 │   ├── generate_eval_config.py   ← 初始状态清单生成器
 │   ├── placement_filter.py       ← 数据筛选函数
@@ -44,7 +46,8 @@ vla_finetune_repo/
 ├── video_links.md                ← 代表性视频链接（待评测组员填写）
 ├── videos/                       ← 视频存放目录（当前为空）
 └── docs/
-    ├── REQUIREMENTS_CHECKLIST.md ← 作业要求逐条对照表（自查用，建议先看）
+    ├── EVAL_FIX.md               ← **评测 0 成功的根因与修复**（评测前必读）
+    ├── REQUIREMENTS_CHECKLIST.md ← 作业要求逐条对照表（自查用）
     ├── MODEL_SELECTION.md        ← 模型选择与 WidowX 训练依据
     ├── DATA_PREPARATION.md       ← 数据处理细节
     ├── TRAINING_RECORD.md        ← 训练记录、可训练参数、loss 曲线
@@ -304,6 +307,17 @@ actions = model.sample_actions(obs, task, rng=jax.random.PRNGKey(0))
 | **终止逻辑** | ① 环境原生 `done=True` → 记成功；② 达到最大步数 `truncated=True` → 记失败；③ 策略输出 `terminate_episode>0` 仅记为 `terminated_by_policy`，**不当作成功**；④ 异常捕获 → 记失败并写入异常信息 |
 | 模型 / 环境种子 | `model_seed=0`，`env_seed=0`（两者分别记录，见 `eval_config.json`）|
 | 评分 | 成功率 = 成功数 / 评测数 × 100%；B-SimplerScore = (T1 + T2) / 2 |
+
+> ⚠️ **评测前必须先运行修复脚本**：
+>
+> ```bash
+> python scripts/patch_simplerenv_octo.py --check   # 检查
+> python scripts/patch_simplerenv_octo.py           # 修复（自动备份）
+> python scripts/patch_simplerenv_octo.py --verify  # 验证
+> ```
+>
+> SimplerEnv 的 `OctoInference` 与 Octo 0.6.x 有两处不兼容，会导致
+> **夹爪永远无法闭合、成功率恒为 0**。详见 [`docs/EVAL_FIX.md`](docs/EVAL_FIX.md)。
 
 ### 运行命令
 
