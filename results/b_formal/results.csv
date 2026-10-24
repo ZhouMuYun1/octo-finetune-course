@@ -1,0 +1,4 @@
+﻿模型,训练模块,可训练参数,T1_任务,T1_成功数,T1_评测数,T1_成功率,T2_任务,T2_成功数,T2_评测数,T2_成功率,B-SimplerScore,备注
+Base,未进行本次微调,0,widowx_spoon_on_towel,0,10,0.00,widowx_put_eggplant_in_basket,3,10,30.00,15.00,
+Final-A,动作头(head_only),27/366,widowx_spoon_on_towel,0,10,0.00,widowx_put_eggplant_in_basket,0,10,0.00,0.00,
+Final-B,全量(full),366/366,widowx_spoon_on_towel,0,10,0.00,widowx_put_eggplant_in_basket,0,10,0.00,0.00,

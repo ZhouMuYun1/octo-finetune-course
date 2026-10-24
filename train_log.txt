@@ -1,0 +1,7 @@
+Training logs
+=============
+Final-A (action-head only, 750 steps): logs/train_log_head_only.txt
+Final-B (full fine-tune, 750 steps):     logs/train_log_full.txt
+
+Training config: train_config.py
+Checkpoint metadata: configs/checkpoint_metadata_head_only/, configs/checkpoint_metadata_full/

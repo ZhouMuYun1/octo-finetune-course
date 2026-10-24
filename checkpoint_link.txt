@@ -1,174 +1,36 @@
-# Final Checkpoint 下载与加载说明
+# Final Checkpoint
 
-## 1. Checkpoint 清单
+## Download
 
-| 名称 | 训练方式 | 训练步数 | 采用的 step | 可训练参数 | 大小 |
-|---|---|---|---:|---:|---:|
-| **Final-A（主方案）** | `head_only` | 1,000 | **750** | 27 / 366 叶子 | 298 MB |
-| **Final-B（对照）** | `full` | 1,000 | **750** | 366 / 366 叶子 | 297 MB |
+Baidu Netdisk: https://pan.baidu.com/s/1l0pCdl9YrV3DnfQFpQebIg?pwd=7uue
+提取码: 7uue
 
-> **评测同时使用 Final-A（head_only）与 Final-B（full）**，与 Base 做三方对比（3 模型 × 2 任务 × 10 = **60 episodes**）。Final-B 用于回答「小数据 + domain gap 下冻结 Transformer 是否更稳」。
->
-> 两个模型的训练都跑满 1,000 步，但为保持**步数一致、对比公平**，统一取 **step 750**（full 的 step 1000 保存时因内存压力中断）。详见 `docs/TRAINING_RECORD.md` 第 5 节。
+包含两个 tar.gz：
+- `octo_head_only_step750.tar.gz` (~300 MB)
+- `octo_full_step750.tar.gz` (~300 MB)
 
-## 2. 下载链接
+## Contents
 
-| 内容 | 链接 | 状态 |
-|---|---|---|
-| Final-A（head_only, step 750）| `【待上传后填写】` | ⏳ 待补充 |
-| Final-B（full, step 750）| `【待上传后填写】` | ⏳ 待补充 |
-| 训练日志（两份，含 loss）| 本仓库 `train_log_*.txt` | ✅ 已包含 |
-| 配置与归一化统计量 | 本仓库 `configs/checkpoint_metadata_*/` | ✅ 已包含 |
-
-### 上传说明
-
-checkpoint 为 orbax 格式的**目录**（不是单文件），上传时请**打包成 zip/tar**。
-
-**建议只打包 `750/` 与 4 个配套文件**，压缩后约 **300 MB**：
+Each tar.gz extracts to `octo_{head_only|full}_step750/` containing:
 
 ```
-octo_head_only_step750/
-├── 750/                       ← 权重（orbax 目录）
-├── config.json                ← 模型结构配置
-├── dataset_statistics.json    ← 归一化统计量（评测必需）
-├── example_batch.msgpack      ← 示例输入（加载时用于初始化）
-└── finetune_config.json       ← 训练超参数快照
+├── 750/                       # orbax checkpoint
+├── config.json                # model arch
+├── dataset_statistics.json    # action normalization stats (required for eval)
+├── example_batch.msgpack      # dummy input for init
+└── finetune_config.json       # training hyperparams snapshot
 ```
 
-打包命令：
+## Base model
 
-```bash
-cd checkpoints/octo_finetune
+Final checkpoints are fine-tuned on top of `rail-berkeley/octo-small-1.5` step 300000. The base model's own config and example batch are unchanged; only `dataset_statistics.json` is from the fine-tuned run and must be used at eval time.
 
-# Final-A
-D=octo_head_only_losslog_20261019_112942
-mkdir -p /tmp/octo_head_only_step750
-cp -r "$D/750" "$D/config.json" "$D/dataset_statistics.json" \
-      "$D/example_batch.msgpack" "$D/finetune_config.json" /tmp/octo_head_only_step750/
-tar czf octo_head_only_step750.tar.gz -C /tmp octo_head_only_step750
-
-# Final-B
-D=octo_full_losslog_20261019_113719
-mkdir -p /tmp/octo_full_step750
-cp -r "$D/750" "$D/config.json" "$D/dataset_statistics.json" \
-      "$D/example_batch.msgpack" "$D/finetune_config.json" /tmp/octo_full_step750/
-tar czf octo_full_step750.tar.gz -C /tmp octo_full_step750
-```
-
-> **重要**：`dataset_statistics.json` 必须与权重一起分发。评测时反归一化要用它，否则动作尺度会错位。
-
----
-
-## 3. 依赖的基础模型
-
-| 项目 | 值 |
-|---|---|
-| 基础模型名称 | **Octo-Small version 1.5** |
-| HuggingFace 仓库 | `rail-berkeley/octo-small-1.5` |
-| 基础 checkpoint step | **300000** |
-| 基础权重文件 | `300000/default/checkpoint`（约 546 MB）|
-| 基础模型地址 | <https://huggingface.co/rail-berkeley/octo-small-1.5> |
-| 训练数据 | BridgeData V2（`bridge_dataset`）|
-| 微调数据量 | 717 条筛选后轨迹（原 1,404 条）|
-
-### 加载方式说明
-
-Final checkpoint 是**在基础模型权重基础上更新得到的**，必须配合基础模型的配套文件使用：
-
-- `config.json`：模型结构（与基础模型相同，因为只更新参数不改结构）
-- `example_batch.msgpack`：示例输入（加载时用于推导输入规格）
-- `dataset_statistics.json`：**微调后**的动作归一化统计量（与基础模型不同，必须用这一份）
-
----
-
-## 4. 加载代码
+## Load
 
 ```python
 import os
-os.environ["HF_ENDPOINT"] = "https://hf-mirror.com"   # 国内必需：加载时需下载 T5-Base tokenizer
+os.environ["HF_ENDPOINT"] = "https://hf-mirror.com"   # T5 tokenizer
 
 from octo.model.octo_model import OctoModel
-import jax, jax.numpy as jnp
-
-# 指向解压后的 checkpoint 目录（含 750/ 与配置文件）
-CKPT = "/path/to/octo_head_only_step750"
-
-model = OctoModel.load_pretrained(CKPT, step=750)
-print("加载成功")
-
-# 推理验证
-obs = {
-    "image_primary": jnp.zeros((1, 2, 256, 256, 3), dtype=jnp.uint8),
-    "image_wrist":   jnp.zeros((1, 2, 128, 128, 3), dtype=jnp.uint8),
-    "timestep_pad_mask": jnp.ones((1, 2), dtype=jnp.bool_),
-}
-task = model.create_tasks(texts=["put the spoon on the towel"])
-actions = model.sample_actions(obs, task, rng=jax.random.PRNGKey(0))
-print("action shape:", actions.shape)   # 预期 (1, 4, 7)
+model = OctoModel.load_pretrained("/path/to/octo_head_only_step750", step=750)
 ```
-
-### 环境要求
-
-| 依赖 | 版本 |
-|---|---|
-| Python | 3.10 |
-| JAX | 0.6.2（`jax[cuda12]`）|
-| Flax | 0.10.7 |
-| transformers | 4.55.4 |
-| Octo | commit `241fb35` |
-
-完整安装步骤见 [`docs/REPRODUCTION.md`](docs/REPRODUCTION.md)。
-
----
-
-## 5. 归一化统计量（评测必需）
-
-Final-A（head_only）训练时使用的动作统计量：
-
-```json
-{
-  "mean": [0.00038, 0.00007, -0.00021, -0.00021, -0.00038, 0.00124, 0.61764],
-  "std":  [0.00973, 0.01428, 0.01288, 0.0273, 0.0312, 0.05302, 0.48593],
-  "min":  [-0.05087, -0.06327, -0.05374, -0.21707, -0.29106, -0.30395, 0.0],
-  "max":  [0.05502, 0.06301, 0.06775, 0.23341, 0.24861, 0.29119, 1.0]
-}
-```
-
-**与 Base 的差异**（Base 用 Bridge 全体 60,064 条轨迹的统计量）：
-
-| 统计量 | Base | Final-A |
-|---|---|---|
-| std | `[0.00963, 0.0135, 0.01251, 0.02815, 0.03028, 0.07586, 0.48772]` | `[0.00973, 0.01428, 0.01288, 0.0273, 0.0312, 0.05302, 0.48593]` |
-| min（第 6 维）| -6.279 | -0.304 |
-| max（第 6 维）| 6.280 | 0.291 |
-
-**说明**：`std` 差异很小（< 5%），但 `min/max` 差异大（Bridge 全体含大幅旋转，本数据集旋转集中在 ±0.3 弧度）。
-
-评测代码反归一化时**必须使用与模型训练一致的那份统计量**：
-- Base → 用 Base checkpoint 附带的 `dataset_statistics.json`
-- Final → 用 Final checkpoint 附带的 `dataset_statistics.json`
-
-完整文件见 [`configs/checkpoint_metadata_head_only/dataset_statistics.json`](configs/checkpoint_metadata_head_only/dataset_statistics.json)。
-
----
-
-## 6. 文件完整性校验
-
-解压后请确认目录结构：
-
-```
-octo_head_only_step750/
-├── 750/
-│   ├── _METADATA
-│   ├── _sharding
-│   ├── checkpoint          ← 44 KB
-│   ├── manifest.ocdbt
-│   ├── ocdbt.process_0/
-│   └── d/                  ← 实际权重数据
-├── config.json             ← 15 KB
-├── dataset_statistics.json ← 2 KB
-├── example_batch.msgpack   ← 246 KB
-└── finetune_config.json    ← 2.4 KB
-```
-
-预估解压后大小：约 **300 MB**（仅 step 750）；若包含 250/500/750 与 state，约 **1.6 GB**。

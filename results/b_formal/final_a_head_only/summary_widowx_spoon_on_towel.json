@@ -1,0 +1,15 @@
+{
+  "model": "FinalA",
+  "task": "widowx_spoon_on_towel",
+  "episodes": 10,
+  "success": 0,
+  "success_rate_pct": 0.0,
+  "exceptions": 0,
+  "max_episode_steps": 60,
+  "control_freq_hz": 5,
+  "eval_config": "/home/ubuntu/vla_finetune_repo/configs/eval_config.json",
+  "ckpt_path": "/home/ubuntu/vla_finetune_repo/octo_head_only_step750",
+  "model_seed": 0,
+  "env_seed": 0,
+  "timestamp": "2026-10-24 15:44:32"
+}
