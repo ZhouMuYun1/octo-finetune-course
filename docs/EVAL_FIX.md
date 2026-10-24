@@ -1,5 +1,22 @@
 # 评测结果为 0 的原因与修复方案
 
+> ## ✅ 最新方案（推荐，无需打补丁）
+>
+> 仓库已内置自包含适配层 `scripts/octo_bridge_policy.py`，`evaluate.py` 已改为直接使用它，
+> **不再依赖 SimplerEnv 的 `OctoInference`**。因此：
+>
+> - 从仓库重新部署后**自动生效**，不需要修改任何第三方代码
+> - 下面第三节的 `patch_simplerenv_octo.py` 仅作为**备选**保留（适用于想继续用
+>   SimplerEnv 原生 `OctoInference` 的情况）
+>
+> 自包含适配层修正了同样两处问题：
+> 1. 用 `timestep_pad_mask`（而非 `pad_mask`）
+> 2. **只对 mask=True 的维度反归一化**（夹爪保持原始值 0/1）
+>
+> 已用真实 Bridge 轨迹验证：模型在需要抓取的帧能正确输出 close
+> （帧 15–17 判定 close，与真实标注一致），而修复前永远是 open。
+
+
 ## 一、现象
 
 3 个模型（Base / Final-A / Final-B）在 T1、T2 上全部 **0/10**，所有 episode 都是 `truncated=True`（跑满 60/120 步），无异常。

@@ -50,7 +50,10 @@ import numpy as np
 
 warnings.filterwarnings("ignore")
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+# 仓库根目录（task_config.py 在这里）与 scripts/ 目录（octo_bridge_policy.py 在这里）
+_HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, _HERE)
+sys.path.insert(0, os.path.join(_HERE, "scripts"))
 
 from task_config import (  # noqa: E402
     OBS_CAMERA_NAME,
@@ -265,23 +268,30 @@ def main() -> int:
     print("=" * 70)
 
     # ---- 加载策略 ----
-    from simpler_env.policies.octo.octo_model import OctoInference
+    # 使用本仓库自带的适配层（scripts/octo_bridge_policy.py），而不是
+    # SimplerEnv 的 OctoInference。原因见 docs/EVAL_FIX.md：
+    #   · OctoInference 传 pad_mask（Octo 0.6.x 需要 timestep_pad_mask）→ KeyError
+    #   · OctoInference 对夹爪也做反归一化 → 0(close) 变 0.588 → 永远判 open
+    #   · 夹爪无法闭合 → 抓不住物体 → 成功率恒为 0
+    # 自包含适配层不修改 SimplerEnv，从仓库重新部署即自动生效。
+    from octo_bridge_policy import OctoBridgePolicy
 
-    model_kwargs = dict(
-        model_type=args.model_type,
+    os.environ.setdefault("XLA_PYTHON_CLIENT_PREALLOCATE", "false")
+    from octo.model.octo_model import OctoModel
+
+    if args.ckpt_path:
+        print(f"loading finetuned checkpoint: {args.ckpt_path}")
+        loaded = OctoModel.load_pretrained(args.ckpt_path)
+    else:
+        hf_repo = f"hf://rail-berkeley/{args.model_type}"
+        print(f"loading pretrained weights from HuggingFace: {hf_repo}")
+        loaded = OctoModel.load_pretrained(hf_repo)
+
+    model = OctoBridgePolicy(
+        model=loaded,
         policy_setup="widowx_bridge",
         init_rng=int(manifest["meta"].get("model_seed", 0)),
     )
-    if args.ckpt_path:
-        os.environ.setdefault("XLA_PYTHON_CLIENT_PREALLOCATE", "false")
-        from octo.model.octo_model import OctoModel
-
-        print(f"loading finetuned checkpoint: {args.ckpt_path}")
-        loaded = OctoModel.load_pretrained(args.ckpt_path)
-        model = OctoInference(model=loaded, **model_kwargs)
-    else:
-        print("loading pretrained weights from HuggingFace (Base)")
-        model = OctoInference(**model_kwargs)
 
     # ---- 逐 episode 评测 ----
     video_dir = os.path.join(args.output_dir, "videos")

@@ -28,7 +28,8 @@ vla_finetune_repo/
 │   ├── eval_config.json          ← 正式评测初始状态清单（已冻结）
 │   └── checkpoint_metadata_*/    ← 两个 Final checkpoint 的配置与归一化统计量
 ├── scripts/
-│   ├── patch_simplerenv_octo.py  ← **评测前必须运行**（修复 2 处接口 bug）
+│   ├── octo_bridge_policy.py     ← **自包含策略适配层**（evaluate.py 使用）
+│   ├── patch_simplerenv_octo.py  ← 备选：给 SimplerEnv 原生 OctoInference 打补丁
 │   ├── summarize_results.py      ← 汇总 episodes.csv → results.csv
 │   ├── task_config.py            ← T1/T2 任务参数
 │   ├── generate_eval_config.py   ← 初始状态清单生成器
@@ -308,16 +309,13 @@ actions = model.sample_actions(obs, task, rng=jax.random.PRNGKey(0))
 | 模型 / 环境种子 | `model_seed=0`，`env_seed=0`（两者分别记录，见 `eval_config.json`）|
 | 评分 | 成功率 = 成功数 / 评测数 × 100%；B-SimplerScore = (T1 + T2) / 2 |
 
-> ⚠️ **评测前必须先运行修复脚本**：
+> ✅ **本仓库已内置正确的策略适配层**（`scripts/octo_bridge_policy.py`），
+> `evaluate.py` 直接使用它，**不需要修改 SimplerEnv 的任何文件**。
 >
-> ```bash
-> python scripts/patch_simplerenv_octo.py --check   # 检查
-> python scripts/patch_simplerenv_octo.py           # 修复（自动备份）
-> python scripts/patch_simplerenv_octo.py --verify  # 验证
-> ```
->
-> SimplerEnv 的 `OctoInference` 与 Octo 0.6.x 有两处不兼容，会导致
-> **夹爪永远无法闭合、成功率恒为 0**。详见 [`docs/EVAL_FIX.md`](docs/EVAL_FIX.md)。
+> SimplerEnv 原生 `OctoInference` 与 Octo 0.6.x 有两处不兼容，会导致
+> **夹爪永远无法闭合、成功率恒为 0**（详见 [`docs/EVAL_FIX.md`](docs/EVAL_FIX.md)）。
+> 若你因故仍需使用原生 `OctoInference`，可运行
+> `python scripts/patch_simplerenv_octo.py` 打补丁（备选方案）。
 
 ### 运行命令
 
